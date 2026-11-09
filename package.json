@@ -8,8 +8,11 @@
     "start": "node server/index.js",
     "dev": "node --watch server/index.js"
   },
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
+    "@supabase/server": "^1.9.2",
     "express": "^4.19.2"
   },
   "optionalDependencies": {

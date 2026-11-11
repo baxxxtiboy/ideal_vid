@@ -18,7 +18,7 @@ Admin: `admin` / `admin1414` (kirgach «Sozlama» bo'limidan parolni almashtirin
 ## 2. Telegram bot
 
 1. Telegramda **@BotFather** → `/newbot` → bot nomi va username tanlang → **token** oling.
-2. `.env.example` faylini `.env` deb nusxalang va `BOT_TOKEN=` ga tokenni yozing.
+2. Loyihaning asosiy papkasida `.env` faylini oching (bo'lmasa, yarating) va `BOT_TOKEN=` qatoriga tokenni yozing. `.env` ni GitHub'ga yuklamang.
 3. Bot Mini App ochishi uchun sayt **HTTPS** manzilda turishi kerak (3-bo'limga qarang) va `PUBLIC_URL=` ga shu manzil yoziladi.
 4. Botga `/start` yuboring — «🛍 Katalogni ochish» tugmasi chiqadi (pastdagi menyuda ham «Katalog» bo'ladi).
 5. Adminga xabarlar (yangi zakaz + chek rasmi + ✅/❌ tugmalari) kelishi uchun:
@@ -29,25 +29,48 @@ Admin: `admin` / `admin1414` (kirgach «Sozlama» bo'limidan parolni almashtirin
 
 Nega tashqi baza? Render bepul tarifida fayllar har qayta ishga tushganda o'chadi. Zakazlar, mijozlar, chek rasmlari va foyda hisoboti yo'qolmasligi uchun baza Supabase'da turadi.
 
-### 3.1. Supabase
-1. **supabase.com** → New project (bepul). Parolni xohlagancha qo'ying (bu loyihada u kerak bo'lmaydi).
-2. **SQL Editor → New query** → `supabase.sql` faylining **hammasini** qo'yib **RUN** bosing («Success» chiqadi). Bu 2 ta jadval yaratadi.
-3. Ikkita narsani nusxalang:
-   - **Project URL** — `Connect` oynasida yoki *Settings → Data API*da (`https://xxxx.supabase.co`).
-   - **Secret key** — *Settings → API Keys → Secret keys* (`sb_secret_...`). Ochiq (publishable/anon) kalit EMAS. Eski loyihalarda *Legacy* tabdagi `service_role` kaliti ham ishlaydi.
+### 3.1. Supabase loyihasini tayyorlash
+1. **supabase.com** saytiga kiring va **New project** orqali loyiha yarating.
+2. Supabase loyihasida **SQL Editor → New query** ni oching. Loyihadagi `supabase.sql` faylining hammasini nusxalab qo'ying va **RUN** bosing. Muvaffaqiyatli bajarilganda `kv` va `files` jadvallari yaratiladi.
+3. **Project Settings → API Keys** (yoki **Connect**) bo'limidan **Project URL** ni oling. U `https://....supabase.co` ko'rinishida bo'ladi.
+4. Shu loyihaning **Secret key** ini oling. U odatda `sb_secret_` bilan boshlanadi. Server uchun **publishable/anon** kalit yaramaydi; `SUPABASE_JWKS_URL` bu loyihada kerak emas.
 
-### 3.2. Render
-1. Loyihani GitHub'ga yuklang (`node_modules` va `.env` yuklanmaydi — `.gitignore` bor).
-2. **Render** → New → **Web Service** → GitHub repo → quyidagilarni kiriting:
+> **Xavfsizlik:** Secret key'ni hech kimga yubormang, GitHub'ga qo'ymang va brauzer kodiga yozmang. Avval oshkor qilingan yoki repozitoriyga kirib qolgan kalitni Supabase'da bekor qilib, yangisini yarating.
+
+### 3.2. Kompyuterda ulash (VS Code)
+1. Loyihaning asosiy papkasidagi `.env` faylini oching. U bo'lmasa, shu papkada `.env` nomli yangi fayl yarating. `.env.example` ichida maxfiy kalitlar bo'lishi mumkin — uni nusxalashdan oldin tekshiring.
+2. `.env` fayliga quyidagi ikki qatorni qo'shing yoki mavjudlarini o'z loyihangiz ma'lumotlari bilan yangilang:
+
+   ```env
+   SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+   SUPABASE_SECRET_KEY=YOUR_SECRET_KEY
+   ```
+
+   `YOUR_PROJECT` va `YOUR_SECRET_KEY` o'rniga Supabase'dan olgan qiymatlarni yozing. Haqiqiy kalitni chatga yoki GitHub'ga yubormang.
+3. Faylni saqlang. VS Code terminalida `npm start` buyrug'ini ishga tushiring. Server avvaldan ishlayotgan bo'lsa, `Ctrl+C` bilan to'xtatib, qayta `npm start` qiling.
+4. Terminalda `Baza: Supabase (...)` yozuvi chiqqanini tekshiring. Sayt `http://localhost:3000` manzilida ochiladi.
+
+### 3.3. Render'da ulash
+1. Loyihani GitHub'ga yuklang. `.env` va `node_modules` fayllarini yuklamang.
+2. **Render → New → Web Service** orqali GitHub repozitoriysini ulang:
    - Build Command: `npm install`
    - Start Command: `npm start`
-   - Environment (har biri alohida KEY / VALUE, qo'shtirnoqsiz): `SUPABASE_URL`, `SUPABASE_KEY`, `BOT_TOKEN`, `PUBLIC_URL`, `ADMIN_PASSWORD`, `SECRET` (uzun tasodifiy matn)
-3. `PUBLIC_URL` = Render bergan manzil (`https://....onrender.com`). Deploy tugagach bot webhook avtomatik ulanadi.
-4. Loglarda shu qatorlar chiqsa hammasi joyida: `Baza: Supabase (xxxx.supabase.co)` va `Bot: webhook ulandi`.
-   Baza ulanmasa, **saytning o'zida** sababi yoziladi (qaysi sozlama xato ekani bilan), server esa har 20 soniyada qayta urinadi.
-5. Bepul tarif 15 daqiqa harakatsizlikdan keyin «uxlaydi» (birinchi ochilish ~30 soniya). Uxlamasligi uchun uptimerobot.com orqali `https://MANZIL/healthz` ni 5 daqiqada bir tekshirtirib qo'ying — shu bilan Supabase ham «pauza» bo'lib qolmaydi (bepul loyiha 1 hafta ishlatilmasa to'xtatiladi; server 12 soatda bir marta bazaga «tiriklik» belgisi yuboradi).
+3. Render'dagi **Environment** bo'limiga quyidagi qiymatlarni har birini alohida **KEY / VALUE** qilib kiriting:
+   - `SUPABASE_URL` — Supabase Project URL
+   - `SUPABASE_SECRET_KEY` — shu loyihaning Secret key'i
+   - `BOT_TOKEN` — Telegram bot ishlatilsa
+   - `PUBLIC_URL` — Render bergan `https://....onrender.com` manzili
+   - `ADMIN_PASSWORD` — admin paroli
+   - `SECRET` — uzun, tasodifiy maxfiy qiymat
+4. **Save, Deploy** bosing. Render **Logs** bo'limida `Baza: Supabase (...)` yozuvi chiqsa, baza ulangan. `Bot: webhook ulandi` faqat Telegram bot holatini bildiradi.
 
-> MongoDB Atlas ham qo'llab-quvvatlanadi: `SUPABASE_URL` / `SUPABASE_KEY` bo'sh bo'lsa va `MONGODB_URI` berilgan bo'lsa shu ishlaydi.
+### Ulanmasa nima qilish kerak?
+- **401 / invalid api key:** `SUPABASE_URL` va `SUPABASE_SECRET_KEY` bir Supabase loyihasiga tegishli ekanini tekshiring. Secret key'ni boshidan oxirigacha nusxalang; publishable/anon kalit ishlatmang. Oshkor bo'lgan kalitni bekor qilib, yangisini yarating.
+- **`kv` yoki `files` jadvali topilmadi:** `supabase.sql` faylini kerakli loyiha ichidagi SQL Editor'da to'liq ishga tushiring.
+- **Tarmoq xatosi:** Supabase Dashboard'da loyiha pauza bo'lmaganini tekshiring; pauzada bo'lsa **Restore project** bosing.
+- Sozlamalarni o'zgartirgach, lokal serverni qayta ishga tushiring yoki Render'da qayta deploy qiling.
+
+> MongoDB Atlas ham qo'llab-quvvatlanadi: Supabase sozlamalari bo'sh bo'lsa va `MONGODB_URI` berilgan bo'lsa, shu ishlaydi.
 
 ## 4. Birinchi marta admin nimalarni to'ldiradi
 
